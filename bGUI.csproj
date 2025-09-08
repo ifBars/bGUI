@@ -241,6 +241,10 @@
 	  </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Samples\" />
+  </ItemGroup>
+
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="tasklist | findstr /I &quot;Schedule.*I.exe&quot; &gt;nul &amp;&amp; taskkill /F /IM &quot;Schedule I.exe&quot;&#xD;&#xA;COPY &quot;$(TargetPath)&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I\mods&quot;&#xD;&#xA;START &quot;&quot; &quot;D:\SteamLibrary\steamapps\common\Schedule I\Schedule I.exe&quot;" />
 	</Target>

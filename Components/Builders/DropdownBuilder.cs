@@ -92,6 +92,48 @@ namespace bGUI.Components
             return this;
         }
 
+        public DropdownBuilder SetLabelColor(Color color)
+        {
+            _dropdown.SetLabelColor(color);
+            return this;
+        }
+
+        public DropdownBuilder SetArrowImage(Sprite sprite)
+        {
+            _dropdown.SetArrowImage(sprite);
+            return this;
+        }
+
+        public DropdownBuilder SetBackgroundColor(Color color)
+        {
+            _dropdown.SetBackgroundColor(color);
+            return this;
+        }
+
+        public DropdownBuilder SetArrowColor(Color color)
+        {
+            _dropdown.SetArrowColor(color);
+            return this;
+        }
+
+        public DropdownBuilder SetTemplateBackgroundColor(Color color)
+        {
+            _dropdown.SetTemplateBackgroundColor(color);
+            return this;
+        }
+
+        public DropdownBuilder SetTemplateHeight(float height)
+        {
+            _dropdown.SetTemplateHeight(height);
+            return this;
+        }
+
+        public DropdownBuilder SetVisibleItemCount(int count)
+        {
+            _dropdown.SetVisibleItemCount(count);
+            return this;
+        }
+
         public DropdownBuilder SetSize(float width, float height)
         {
             _dropdown.RectTransform.sizeDelta = new Vector2(width, height);

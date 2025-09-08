@@ -17,8 +17,12 @@ namespace bGUI.Components
         private Text _captionText = null!;
         private Image _arrowImage = null!;
         private RectTransform _templateRect = null!;
+        private RectTransform _contentRect = null!;
         private Text _itemText = null!;
         private Image _itemImage = null!;
+        private Image _templateBackgroundImage = null!;
+        private float _itemHeight = 48f;
+        private float _itemSpacing = 2f;
         private event Action<int>? _onValueChanged;
 
         /// <summary>
@@ -126,12 +130,15 @@ namespace bGUI.Components
             _templateRect.anchorMin = new Vector2(0f, 0f);
             _templateRect.anchorMax = new Vector2(1f, 0f);
             _templateRect.pivot = new Vector2(0.5f, 1f);
-            _templateRect.sizeDelta = new Vector2(0f, 150f);
+            _templateRect.sizeDelta = new Vector2(0f, 220f);
             _templateRect.anchoredPosition = new Vector2(0f, -2f); // Position template below the dropdown
             templateGO.SetActive(false);
+            var templateLayout = templateGO.AddComponent<LayoutElement>();
+            templateLayout.minHeight = _templateRect.sizeDelta.y;
+            templateLayout.preferredHeight = _templateRect.sizeDelta.y;
 
-            var templateImage = templateGO.AddComponent<Image>();
-            templateImage.type = Image.Type.Sliced;
+            _templateBackgroundImage = templateGO.AddComponent<Image>();
+            _templateBackgroundImage.type = Image.Type.Sliced;
             var scrollRect = templateGO.AddComponent<ScrollRect>();
             // Clamp and stabilize scrolling to avoid snapping back
             scrollRect.horizontal = false;
@@ -155,33 +162,33 @@ namespace bGUI.Components
 
             // Content
             var contentGO = new GameObject("Content");
-            var contentRect = contentGO.AddComponent<RectTransform>();
-            contentRect.SetParent(viewportRect, false);
-            contentRect.anchorMin = new Vector2(0f, 1f);
-            contentRect.anchorMax = new Vector2(1f, 1f);
-            contentRect.pivot = new Vector2(0.5f, 1f);
-            contentRect.anchoredPosition = Vector2.zero;
-            contentRect.sizeDelta = new Vector2(0f, 0f);
+            _contentRect = contentGO.AddComponent<RectTransform>();
+            _contentRect.SetParent(viewportRect, false);
+            _contentRect.anchorMin = new Vector2(0f, 1f);
+            _contentRect.anchorMax = new Vector2(1f, 1f);
+            _contentRect.pivot = new Vector2(0.5f, 1f);
+            _contentRect.anchoredPosition = Vector2.zero;
+            _contentRect.sizeDelta = new Vector2(0f, 0f);
             var vlg = contentGO.AddComponent<VerticalLayoutGroup>();
             vlg.childControlHeight = true;
             vlg.childForceExpandHeight = false;
             vlg.childForceExpandWidth = true;
-            vlg.spacing = 2f;
+            vlg.spacing = _itemSpacing;
             var fitter = contentGO.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             // Item
             var itemGO = new GameObject("Item");
             var itemRect = itemGO.AddComponent<RectTransform>();
-            itemRect.SetParent(contentRect, false);
+            itemRect.SetParent(_contentRect, false);
             itemRect.anchorMin = new Vector2(0f, 0.5f);
             itemRect.anchorMax = new Vector2(1f, 0.5f);
-            itemRect.sizeDelta = new Vector2(0f, 20f);
+            itemRect.sizeDelta = new Vector2(0f, _itemHeight);
 
             var itemToggle = itemGO.AddComponent<Toggle>();
             var layout = itemGO.AddComponent<LayoutElement>();
-            layout.minHeight = 24f;
-            layout.preferredHeight = 24f;
+            layout.minHeight = _itemHeight;
+            layout.preferredHeight = _itemHeight;
             var itemBGGO = new GameObject("Item Background");
             var itemBGRect = itemBGGO.AddComponent<RectTransform>();
             itemBGRect.SetParent(itemRect, false);
@@ -212,15 +219,18 @@ namespace bGUI.Components
 
             // Wire template components
             scrollRect.viewport = viewportRect;
-            scrollRect.content = contentRect;
+            scrollRect.content = _contentRect;
             itemToggle.targetGraphic = _itemImage;
             itemToggle.graphic = itemCheckImage;
+            // Item acts as a template for Dropdown to clone; keep it disabled
+            itemGO.SetActive(false);
 
             // Hook dropdown to parts
             _dropdown.template = _templateRect;
             _dropdown.captionText = _captionText;
             _dropdown.itemText = _itemText;
-            _dropdown.captionImage = _backgroundImage;
+            // Unity's default Dropdown uses an optional captionImage; we leave it null here.
+            _dropdown.captionImage = null;
             _dropdown.itemImage = _itemImage;
             _dropdown.targetGraphic = _backgroundImage;
             // Ensure the list opens scrolled to the top by default
@@ -236,19 +246,25 @@ namespace bGUI.Components
             {
                 _backgroundImage.sprite = uiSprite;
                 _backgroundImage.type = Image.Type.Sliced;
+                // Dark theme default background
+                _backgroundImage.color = new Color(0.25f, 0.27f, 0.32f, 1f);
+                _templateBackgroundImage.sprite = uiSprite;
+                _templateBackgroundImage.type = Image.Type.Sliced;
+                _templateBackgroundImage.color = new Color(0.18f, 0.2f, 0.24f, 0.98f);
             }
             if (arrowSprite != null)
             {
                 _arrowImage.sprite = arrowSprite;
                 _arrowImage.type = Image.Type.Sliced;
+                _arrowImage.color = Color.white;
             }
 
             var colors = _dropdown.colors;
-            colors.normalColor = Color.white;
-            colors.highlightedColor = new Color(0.9f, 0.9f, 0.9f, 1f);
-            colors.pressedColor = new Color(0.8f, 0.8f, 0.8f, 1f);
-            colors.selectedColor = new Color(0.9f, 0.9f, 0.9f, 1f);
-            colors.disabledColor = new Color(0.8f, 0.8f, 0.8f, 0.5f);
+            colors.normalColor = new Color(0.25f, 0.27f, 0.32f, 1f);
+            colors.highlightedColor = new Color(0.30f, 0.33f, 0.38f, 1f);
+            colors.pressedColor = new Color(0.20f, 0.22f, 0.26f, 1f);
+            colors.selectedColor = new Color(0.30f, 0.50f, 0.90f, 1f);
+            colors.disabledColor = new Color(0.25f, 0.27f, 0.32f, 0.5f);
             _dropdown.colors = colors;
 
             // Default single option placeholder
@@ -303,6 +319,70 @@ namespace bGUI.Components
                 _backgroundImage.sprite = sprite;
                 _backgroundImage.type = sprite != null ? Image.Type.Sliced : Image.Type.Simple;
             }
+        }
+
+        public void SetLabelColor(Color color)
+        {
+            if (_captionText != null)
+            {
+                _captionText.color = color;
+            }
+        }
+
+        public void SetArrowImage(Sprite sprite)
+        {
+            if (_arrowImage != null)
+            {
+                _arrowImage.sprite = sprite;
+                _arrowImage.type = sprite != null ? Image.Type.Sliced : Image.Type.Simple;
+            }
+        }
+
+        public void SetBackgroundColor(Color color)
+        {
+            if (_backgroundImage != null)
+            {
+                _backgroundImage.color = color;
+            }
+        }
+
+        public void SetArrowColor(Color color)
+        {
+            if (_arrowImage != null)
+            {
+                _arrowImage.color = color;
+            }
+        }
+
+        public void SetTemplateBackgroundColor(Color color)
+        {
+            if (_templateBackgroundImage != null)
+            {
+                _templateBackgroundImage.color = color;
+            }
+        }
+
+        public void SetTemplateHeight(float height)
+        {
+            if (_templateRect != null)
+            {
+                var size = _templateRect.sizeDelta;
+                size.y = height;
+                _templateRect.sizeDelta = size;
+                var le = _templateRect.GetComponent<LayoutElement>();
+                if (le != null)
+                {
+                    le.minHeight = height;
+                    le.preferredHeight = height;
+                }
+            }
+        }
+
+        public void SetVisibleItemCount(int count)
+        {
+            if (count < 1) count = 1;
+            float height = (count * (_itemHeight + _itemSpacing)) + 4f;
+            SetTemplateHeight(height);
         }
 
         private void OnDropdownValueChanged(int value)

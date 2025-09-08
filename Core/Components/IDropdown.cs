@@ -65,6 +65,42 @@ namespace bGUI.Core.Components
         /// Sets the sprite for the dropdown background.
         /// </summary>
         void SetBackgroundImage(Sprite sprite);
+
+        /// <summary>
+        /// Sets the color of the caption label text.
+        /// </summary>
+        void SetLabelColor(Color color);
+
+        /// <summary>
+        /// Sets the sprite for the dropdown arrow image.
+        /// </summary>
+        void SetArrowImage(Sprite sprite);
+
+        /// <summary>
+        /// Sets the background color of the dropdown button.
+        /// </summary>
+        void SetBackgroundColor(Color color);
+
+        /// <summary>
+        /// Sets the arrow color.
+        /// </summary>
+        void SetArrowColor(Color color);
+
+        /// <summary>
+        /// Sets the background color of the dropdown list template.
+        /// </summary>
+        void SetTemplateBackgroundColor(Color color);
+
+        /// <summary>
+        /// Sets the height of the dropdown template list (in pixels).
+        /// </summary>
+        void SetTemplateHeight(float height);
+
+        /// <summary>
+        /// Sets how many items are visible before scrolling is required.
+        /// This computes an appropriate template height for the list viewport.
+        /// </summary>
+        void SetVisibleItemCount(int count);
     }
 }
 
