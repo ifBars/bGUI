@@ -21,7 +21,7 @@ namespace bGUI.Components
         private Text _itemText = null!;
         private Image _itemImage = null!;
         private Image _templateBackgroundImage = null!;
-        private float _itemHeight = 48f;
+        private float _itemHeight = 24f;
         private float _itemSpacing = 2f;
         private event Action<int>? _onValueChanged;
 
@@ -130,12 +130,9 @@ namespace bGUI.Components
             _templateRect.anchorMin = new Vector2(0f, 0f);
             _templateRect.anchorMax = new Vector2(1f, 0f);
             _templateRect.pivot = new Vector2(0.5f, 1f);
-            _templateRect.sizeDelta = new Vector2(0f, 220f);
+            _templateRect.sizeDelta = new Vector2(0f, 150f);
             _templateRect.anchoredPosition = new Vector2(0f, -2f); // Position template below the dropdown
             templateGO.SetActive(false);
-            var templateLayout = templateGO.AddComponent<LayoutElement>();
-            templateLayout.minHeight = _templateRect.sizeDelta.y;
-            templateLayout.preferredHeight = _templateRect.sizeDelta.y;
 
             _templateBackgroundImage = templateGO.AddComponent<Image>();
             _templateBackgroundImage.type = Image.Type.Sliced;
@@ -222,8 +219,6 @@ namespace bGUI.Components
             scrollRect.content = _contentRect;
             itemToggle.targetGraphic = _itemImage;
             itemToggle.graphic = itemCheckImage;
-            // Item acts as a template for Dropdown to clone; keep it disabled
-            itemGO.SetActive(false);
 
             // Hook dropdown to parts
             _dropdown.template = _templateRect;
@@ -369,12 +364,6 @@ namespace bGUI.Components
                 var size = _templateRect.sizeDelta;
                 size.y = height;
                 _templateRect.sizeDelta = size;
-                var le = _templateRect.GetComponent<LayoutElement>();
-                if (le != null)
-                {
-                    le.minHeight = height;
-                    le.preferredHeight = height;
-                }
             }
         }
 
