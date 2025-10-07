@@ -101,6 +101,38 @@ namespace bGUI.Core.Components
         /// This computes an appropriate template height for the list viewport.
         /// </summary>
         void SetVisibleItemCount(int count);
+
+        /// <summary>
+        /// Sets the height of individual dropdown items.
+        /// </summary>
+        void SetItemHeight(float height);
+
+        /// <summary>
+        /// Sets the spacing between dropdown items.
+        /// </summary>
+        void SetItemSpacing(float spacing);
+
+        /// <summary>
+        /// Sets an adaptive template height based on the number of options available.
+        /// Will show all items if 6 or fewer, otherwise shows a scrollable list.
+        /// </summary>
+        void SetAdaptiveHeight();
+
+        /// <summary>
+        /// Configures the dropdown for optimal readability with larger items.
+        /// </summary>
+        void SetLargeItemMode();
+
+        /// <summary>
+        /// Configures the dropdown for compact display with smaller items.
+        /// </summary>
+        void SetCompactItemMode();
+
+        /// <summary>
+        /// Forces a complete refresh of the dropdown layout and sizing.
+        /// Call this after all options and settings have been configured.
+        /// </summary>
+        void RefreshLayout();
     }
 }
 

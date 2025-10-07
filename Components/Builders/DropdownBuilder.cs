@@ -134,6 +134,42 @@ namespace bGUI.Components
             return this;
         }
 
+        public DropdownBuilder SetItemHeight(float height)
+        {
+            _dropdown.SetItemHeight(height);
+            return this;
+        }
+
+        public DropdownBuilder SetItemSpacing(float spacing)
+        {
+            _dropdown.SetItemSpacing(spacing);
+            return this;
+        }
+
+        public DropdownBuilder SetAdaptiveHeight()
+        {
+            _dropdown.SetAdaptiveHeight();
+            return this;
+        }
+
+        public DropdownBuilder SetLargeItemMode()
+        {
+            _dropdown.SetLargeItemMode();
+            return this;
+        }
+
+        public DropdownBuilder SetCompactItemMode()
+        {
+            _dropdown.SetCompactItemMode();
+            return this;
+        }
+
+        public DropdownBuilder RefreshLayout()
+        {
+            _dropdown.RefreshLayout();
+            return this;
+        }
+
         public DropdownBuilder SetSize(float width, float height)
         {
             _dropdown.RectTransform.sizeDelta = new Vector2(width, height);

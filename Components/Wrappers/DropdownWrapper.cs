@@ -21,9 +21,27 @@ namespace bGUI.Components
         private Text _itemText = null!;
         private Image _itemImage = null!;
         private Image _templateBackgroundImage = null!;
-        private float _itemHeight = 24f;
-        private float _itemSpacing = 2f;
+        private ScrollRect _templateScrollRect = null!;
+        private float _itemHeight = 32f; // Increased from 24f for better readability
+        private float _itemSpacing = 4f; // Increased from 2f for better visual separation
         private event Action<int>? _onValueChanged;
+        
+        // Helper to keep scroll position consistent when template toggles
+        private class DropdownTemplateActivator : MonoBehaviour
+        {
+            private ScrollRect _scrollRect;
+            public void Initialize(ScrollRect scrollRect)
+            {
+                _scrollRect = scrollRect;
+            }
+            private void OnEnable()
+            {
+                if (_scrollRect != null)
+                {
+                    _scrollRect.verticalNormalizedPosition = 1f;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the underlying Dropdown component.
@@ -131,7 +149,7 @@ namespace bGUI.Components
             _templateRect.anchorMax = new Vector2(1f, 0f);
             _templateRect.pivot = new Vector2(0.5f, 1f);
             _templateRect.sizeDelta = new Vector2(0f, 150f);
-            _templateRect.anchoredPosition = new Vector2(0f, -2f); // Position template below the dropdown
+            _templateRect.anchoredPosition = new Vector2(0f, 0f); // Flush with dropdown bottom edge
             templateGO.SetActive(false);
 
             _templateBackgroundImage = templateGO.AddComponent<Image>();
@@ -143,7 +161,8 @@ namespace bGUI.Components
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
             scrollRect.inertia = false;
             scrollRect.elasticity = 0f;
-            scrollRect.scrollSensitivity = 20f;
+            scrollRect.scrollSensitivity = Mathf.Max(18f, _itemHeight * 0.9f); // Responsive, scales with item size
+            _templateScrollRect = scrollRect;
 
             // Viewport
             var viewportGO = new GameObject("Viewport");
@@ -154,8 +173,11 @@ namespace bGUI.Components
             viewportRect.sizeDelta = Vector2.zero;
             var viewportImage = viewportGO.AddComponent<Image>();
             viewportImage.type = Image.Type.Sliced;
-            var mask = viewportGO.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
+            // Transparent but raycastable so scroll/drag work reliably
+            viewportImage.color = new Color(1f, 1f, 1f, 0f);
+            viewportImage.raycastTarget = true;
+            // Use RectMask2D for reliable rectangular clipping
+            viewportGO.AddComponent<RectMask2D>();
 
             // Content
             var contentGO = new GameObject("Content");
@@ -170,7 +192,9 @@ namespace bGUI.Components
             vlg.childControlHeight = true;
             vlg.childForceExpandHeight = false;
             vlg.childForceExpandWidth = true;
+            vlg.childAlignment = TextAnchor.UpperLeft;
             vlg.spacing = _itemSpacing;
+            vlg.padding = new RectOffset(2, 2, 2, 2);
             var fitter = contentGO.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
@@ -178,14 +202,17 @@ namespace bGUI.Components
             var itemGO = new GameObject("Item");
             var itemRect = itemGO.AddComponent<RectTransform>();
             itemRect.SetParent(_contentRect, false);
-            itemRect.anchorMin = new Vector2(0f, 0.5f);
-            itemRect.anchorMax = new Vector2(1f, 0.5f);
+            // Top-align items so the first item starts exactly at the top of the viewport
+            itemRect.anchorMin = new Vector2(0f, 1f);
+            itemRect.anchorMax = new Vector2(1f, 1f);
+            itemRect.pivot = new Vector2(0.5f, 1f);
             itemRect.sizeDelta = new Vector2(0f, _itemHeight);
 
             var itemToggle = itemGO.AddComponent<Toggle>();
             var layout = itemGO.AddComponent<LayoutElement>();
             layout.minHeight = _itemHeight;
             layout.preferredHeight = _itemHeight;
+            layout.flexibleHeight = 0f; // Prevent stretching
             var itemBGGO = new GameObject("Item Background");
             var itemBGRect = itemBGGO.AddComponent<RectTransform>();
             itemBGRect.SetParent(itemRect, false);
@@ -199,7 +226,7 @@ namespace bGUI.Components
             itemCheckRect.anchorMin = new Vector2(0f, 0.5f);
             itemCheckRect.anchorMax = new Vector2(0f, 0.5f);
             itemCheckRect.pivot = new Vector2(0f, 0.5f);
-            itemCheckRect.anchoredPosition = new Vector2(10f, 0f);
+            itemCheckRect.anchoredPosition = new Vector2(6f, -2f);
             itemCheckRect.sizeDelta = new Vector2(20f, 20f);
             var itemCheckImage = itemCheckGO.AddComponent<Image>();
 
@@ -208,7 +235,7 @@ namespace bGUI.Components
             itemLabelRect.SetParent(itemRect, false);
             itemLabelRect.anchorMin = new Vector2(0f, 0f);
             itemLabelRect.anchorMax = new Vector2(1f, 1f);
-            itemLabelRect.offsetMin = new Vector2(20f, 0f);
+            itemLabelRect.offsetMin = new Vector2(26f, 0f);
             _itemText = itemLabelGO.AddComponent<Text>();
             _itemText.alignment = TextAnchor.MiddleLeft;
             _itemText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
@@ -230,6 +257,8 @@ namespace bGUI.Components
             _dropdown.targetGraphic = _backgroundImage;
             // Ensure the list opens scrolled to the top by default
             scrollRect.verticalNormalizedPosition = 1f;
+            // Keep content at top when template is enabled
+            templateGO.AddComponent<DropdownTemplateActivator>().Initialize(scrollRect);
         }
 
         private void SetupDefaults()
@@ -295,6 +324,9 @@ namespace bGUI.Components
                 list.Add(new Dropdown.OptionData(o));
             _dropdown.AddOptions(list);
             _dropdown.RefreshShownValue();
+            
+            // Debug logging
+            Debug.Log($"[DropdownWrapper] SetOptions: Added {list.Count} options. Total options: {_dropdown.options.Count}");
         }
 
         public void SetColors(Color normalColor, Color highlightedColor, Color pressedColor, Color disabledColor)
@@ -370,8 +402,135 @@ namespace bGUI.Components
         public void SetVisibleItemCount(int count)
         {
             if (count < 1) count = 1;
-            float height = (count * (_itemHeight + _itemSpacing)) + 4f;
+            float height = CalculateTemplateHeight(count);
             SetTemplateHeight(height);
+            // Ensure layout rebuild so ScrollRect gets the updated viewport size
+            if (_templateRect != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(_templateRect);
+                if (_templateScrollRect != null)
+                {
+                    _templateScrollRect.verticalNormalizedPosition = 1f;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the height of individual dropdown items.
+        /// </summary>
+        /// <param name="height">The height of each item in pixels</param>
+        public void SetItemHeight(float height)
+        {
+            if (height < 16f) height = 16f; // Minimum readable height
+            _itemHeight = height;
+            
+            // Update the item template if it exists
+            if (_contentRect != null)
+            {
+                var itemGO = _contentRect.GetChild(0);
+                if (itemGO != null)
+                {
+                    var itemRect = itemGO.GetComponent<RectTransform>();
+                    var layout = itemGO.GetComponent<LayoutElement>();
+                    if (itemRect != null)
+                    {
+                        itemRect.sizeDelta = new Vector2(itemRect.sizeDelta.x, _itemHeight);
+                    }
+                    if (layout != null)
+                    {
+                        layout.minHeight = _itemHeight;
+                        layout.preferredHeight = _itemHeight;
+                    }
+                }
+            }
+            if (_templateScrollRect != null)
+            {
+                _templateScrollRect.scrollSensitivity = Mathf.Max(18f, _itemHeight * 0.9f);
+            }
+        }
+
+        /// <summary>
+        /// Sets the spacing between dropdown items.
+        /// </summary>
+        /// <param name="spacing">The spacing between items in pixels</param>
+        public void SetItemSpacing(float spacing)
+        {
+            if (spacing < 0f) spacing = 0f;
+            _itemSpacing = spacing;
+            
+            // Update the vertical layout group if it exists
+            if (_contentRect != null)
+            {
+                var vlg = _contentRect.GetComponent<VerticalLayoutGroup>();
+                if (vlg != null)
+                {
+                    vlg.spacing = _itemSpacing;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculates the optimal template height for the given number of visible items.
+        /// </summary>
+        /// <param name="visibleCount">Number of items to be visible</param>
+        /// <returns>The calculated template height</returns>
+        private float CalculateTemplateHeight(int visibleCount)
+        {
+            // Calculate based on item height, spacing, and padding
+            float contentHeight = visibleCount * _itemHeight;
+            float spacingHeight = Mathf.Max(0, visibleCount - 1) * _itemSpacing;
+            float padding = 12f; // Slightly larger to avoid clipping first/last item
+            return contentHeight + spacingHeight + padding;
+        }
+
+        /// <summary>
+        /// Sets an adaptive template height based on the number of options available.
+        /// Will show all items if 6 or fewer, otherwise shows a scrollable list.
+        /// </summary>
+        public void SetAdaptiveHeight()
+        {
+            int optionCount = _dropdown.options.Count;
+            int visibleCount = Mathf.Clamp(optionCount, 3, 6); // Show at least 3 rows, max 6
+            
+            // Debug logging
+            Debug.Log($"[DropdownWrapper] SetAdaptiveHeight: {optionCount} options, showing {visibleCount} visible");
+            
+            SetVisibleItemCount(visibleCount);
+        }
+
+        /// <summary>
+        /// Configures the dropdown for optimal readability with larger items.
+        /// </summary>
+        public void SetLargeItemMode()
+        {
+            SetItemHeight(40f);
+            SetItemSpacing(6f);
+            SetVisibleItemCount(5); // Fewer visible items due to larger size
+        }
+
+        /// <summary>
+        /// Configures the dropdown for compact display with smaller items.
+        /// </summary>
+        public void SetCompactItemMode()
+        {
+            SetItemHeight(28f);
+            SetItemSpacing(2f);
+            SetVisibleItemCount(8);
+        }
+
+        /// <summary>
+        /// Forces a complete refresh of the dropdown layout and sizing.
+        /// Call this after all options and settings have been configured.
+        /// </summary>
+        public void RefreshLayout()
+        {
+            _dropdown.RefreshShownValue();
+            // Force rebuild the template
+            if (_templateRect != null && _templateRect.gameObject.activeSelf)
+            {
+                _templateRect.gameObject.SetActive(false);
+                _templateRect.gameObject.SetActive(true);
+            }
         }
 
         private void OnDropdownValueChanged(int value)
