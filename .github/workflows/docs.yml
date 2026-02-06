@@ -19,6 +19,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      MelonLoaderPath: ${{ github.workspace }}/Dependencies/MelonLoader
+      UnityAssembliesPath: ${{ github.workspace }}/Dependencies/Managed
+      AutomateLocalDeployment: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,11 +34,120 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Create Assembly Directory Structure
+        run: |
+          mkdir -p Dependencies/MelonLoader
+          mkdir -p Dependencies/Managed
+
+      # Try to restore assemblies from cache first (for external PRs)
+      - name: Restore Game Assemblies from Cache
+        id: cache-assemblies
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v4
+        with:
+          path: Dependencies
+          key: game-assemblies-bgui-v1-${{ hashFiles('bGUI.csproj') }}
+          restore-keys: |
+            game-assemblies-bgui-v1-
+
+      # Only checkout game assemblies if cache miss AND we have access to secrets
+      - name: Checkout Game Assemblies
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.GAME_ASSEMBLIES_REPO }}
+          token: ${{ secrets.GAME_ASSEMBLIES_TOKEN }}
+          path: game-assemblies
+          fetch-depth: 1
+        if: steps.cache-assemblies.outputs.cache-hit != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+
+      - name: Copy Game Assemblies
+        run: |
+          # Copy Unity/Managed assemblies
+          if [ -d "game-assemblies/Managed" ]; then
+            cp -r game-assemblies/Managed/* Dependencies/Managed/ || echo "Failed to copy Managed assemblies"
+            echo "Copied Managed assemblies"
+          else
+            echo "No game-assemblies/Managed directory found"
+          fi
+
+          # Copy MelonLoader assemblies
+          if [ -d "game-assemblies/MelonLoader" ]; then
+            cp -r game-assemblies/MelonLoader/* Dependencies/MelonLoader/ || echo "Failed to copy MelonLoader assemblies"
+            echo "Copied MelonLoader assemblies"
+          else
+            echo "No game-assemblies/MelonLoader directory found"
+          fi
+
+          # Copy Unity.TextMeshPro if present
+          if [ -f "game-assemblies/Managed/Unity.TextMeshPro.dll" ]; then
+            cp game-assemblies/Managed/Unity.TextMeshPro.dll Dependencies/Managed/ || echo "Failed to copy Unity.TextMeshPro.dll"
+            echo "Copied Unity.TextMeshPro.dll"
+          fi
+        if: steps.cache-assemblies.outputs.cache-hit != 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+
+      - name: Verify Assembly Copies
+        run: |
+          echo "=== Dependencies Structure ==="
+          ls -la Dependencies/
+          echo ""
+          echo "=== Managed Assemblies ==="
+          ls -la Dependencies/Managed/ | head -15
+          echo ""
+          echo "=== MelonLoader Assemblies ==="
+          ls -la Dependencies/MelonLoader/ | head -10
+          echo ""
+          echo "=== Critical Assembly Check ==="
+          if [ -f Dependencies/Managed/UnityEngine.dll ]; then
+            echo "✓ Found UnityEngine.dll"
+          else
+            echo "✗ Missing UnityEngine.dll"
+          fi
+          if [ -f Dependencies/MelonLoader/MelonLoader.dll ]; then
+            echo "✓ Found MelonLoader.dll"
+          else
+            echo "✗ Missing MelonLoader.dll"
+          fi
+          if [ -f Dependencies/MelonLoader/0Harmony.dll ]; then
+            echo "✓ Found 0Harmony.dll"
+          else
+            echo "✗ Missing 0Harmony.dll"
+          fi
+          if [ "${{ steps.cache-assemblies.outputs.cache-hit }}" == "true" ]; then
+            echo "✓ Using cached assemblies for build"
+          else
+            echo "✓ Using fresh assemblies from repository"
+          fi
+
+      - name: Create CI Build Properties
+        run: |
+          cat > ci.build.props << 'EOF'
+          <Project>
+            <PropertyGroup>
+              <!-- CI Assembly Paths - override local paths -->
+              <MelonLoaderPath>$(MSBuildThisFileDirectory)Dependencies/MelonLoader</MelonLoaderPath>
+              <UnityAssembliesPath>$(MSBuildThisFileDirectory)Dependencies/Managed</UnityAssembliesPath>
+              <AutomateLocalDeployment>false</AutomateLocalDeployment>
+            </PropertyGroup>
+          </Project>
+          EOF
+
+      - name: Verify Build Properties
+        run: |
+          echo "=== CI Build Properties ==="
+          cat ci.build.props
+          echo ""
+          echo "=== Assembly Path Resolution Test ==="
+          if [ -f Dependencies/Managed/UnityEngine.dll ]; then
+            echo "✓ UnityEngine.dll accessible from Dependencies/Managed/"
+          else
+            echo "✗ UnityEngine.dll NOT accessible"
+          fi
+
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore bGUI.sln /p:CustomAfterMicrosoftCommonProps=ci.build.props
 
       - name: Build
-        run: dotnet build --no-restore -c Release
+        run: dotnet build bGUI.sln --no-restore -c Release /p:CustomAfterMicrosoftCommonProps=ci.build.props
 
       - name: Install DocFX
         run: dotnet tool install -g docfx
@@ -48,6 +161,15 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./docs/_site
+        if: github.event_name != 'pull_request'
+
+      # Save cache for future builds (even on PRs)
+      - name: Save Game Assemblies to Cache
+        uses: actions/cache/save@v4
+        if: always() && (github.event_name == 'pull_request' || github.event_name == 'push') && steps.cache-assemblies.outputs.cache-hit != 'true'
+        with:
+          path: Dependencies
+          key: game-assemblies-bgui-v1-${{ hashFiles('bGUI.csproj') }}
 
   deploy:
     environment:
