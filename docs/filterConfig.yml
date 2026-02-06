@@ -1,0 +1,7 @@
+apiRules:
+- exclude:
+    uidRegex: ^bGUI\.Samples
+    type: Namespace
+- include:
+    uidRegex: ^bGUI
+    type: Namespace

@@ -368,5 +368,11 @@ FodyWeavers.xsd
 # Cursor Memory Files
 assets/memories/
 
+# DocFX generated site
+_site/
+docs/_site/
+docs/api/*.yml
+docs/api/.manifest
+
 AGENTS.md
 project-plan.md
