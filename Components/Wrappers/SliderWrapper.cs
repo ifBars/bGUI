@@ -286,7 +286,6 @@ namespace bGUI.Components
             if (_backgroundImage != null)
             {
                 _backgroundImage.color = color;
-                UnityEngine.Debug.Log($"[SliderWrapper] Background color set to: {color}, GameObject active: {_backgroundImage.gameObject.activeSelf}, Image enabled: {_backgroundImage.enabled}");
             }
             else
             {
@@ -303,7 +302,6 @@ namespace bGUI.Components
             if (_fillImage != null)
             {
                 _fillImage.color = color;
-                UnityEngine.Debug.Log($"[SliderWrapper] Fill color set to: {color}, GameObject active: {_fillImage.gameObject.activeSelf}, Image enabled: {_fillImage.enabled}");
             }
             else
             {

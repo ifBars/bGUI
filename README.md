@@ -26,6 +26,24 @@ A fluent UI library for building in-game menus and interfaces in Unity via [Melo
 2. Copy `bGUI.dll` into your game's `UserLibs/` folder
 3. Reference `bGUI.dll` from your MelonLoader mod project
 
+### Redistribution
+
+bGUI is MIT licensed. You can bundle the built `bGUI.dll` with your own mod zip, including commercial or closed-source mods, as long as the MIT license notice is included with the redistributed copy.
+
+Recommended zip layout:
+
+```text
+YourMod.zip
+├── Mods/
+│   └── YourMod.dll
+├── UserLibs/
+│   └── bGUI.dll
+└── LICENSES/
+    └── bGUI-MIT.txt
+```
+
+MelonLoader loads `UserLibs` dependencies alongside mods, so shipping bGUI this way avoids asking users to install the UI library separately.
+
 ## Building
 
 ```bash

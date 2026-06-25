@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <Version>0.2.0</Version>
+    <Authors>ifBars</Authors>
+    <Description>Fluent Unity UGUI wrapper for MelonLoader mods.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/ifBars/bGUI</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\bGUI.xml</DocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
@@ -12,7 +17,7 @@
     <UnityAssembliesPath Condition="'$(UnityAssembliesPath)' == ''">D:\SteamLibrary\steamapps\common\Schedule I\Schedule I_Data\Managed</UnityAssembliesPath>
     <LocalModsPath Condition="'$(LocalModsPath)' == ''">D:\SteamLibrary\steamapps\common\Schedule I\mods</LocalModsPath>
     <LocalGameExePath Condition="'$(LocalGameExePath)' == ''">D:\SteamLibrary\steamapps\common\Schedule I\Schedule I.exe</LocalGameExePath>
-    <AutomateLocalDeployment Condition="'$(AutomateLocalDeployment)' == ''">true</AutomateLocalDeployment>
+    <AutomateLocalDeployment Condition="'$(AutomateLocalDeployment)' == ''">false</AutomateLocalDeployment>
   </PropertyGroup>
 
   <ItemGroup>
