@@ -22,15 +22,16 @@ This guide walks you through installing bGUI and creating your first mod menu.
 </Reference>
 ```
 
-3. Build the project:
+3. Build the project for your target runtime:
 
 ```bash
-dotnet build bGUI.sln -c Release
+dotnet build bGUI.sln -c MonoRelease
+dotnet build bGUI.sln -c Il2cppRelease
 ```
 
 ### Step 2: Reference bGUI in Your Mod
 
-Copy the built `bGUI.dll` from `bin/Release/netstandard2.1/` into your mod project and add a reference to it.
+Copy the built `bGUI.dll` from `bin/MonoRelease/netstandard2.1/` or `bin/Il2cppRelease/net6.0/` into your mod project and add a reference to it.
 
 ### Step 3: Create Your First Menu
 

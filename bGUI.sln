@@ -8,11 +8,23 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Il2cppDebug|Any CPU = Il2cppDebug|Any CPU
+		Il2cppRelease|Any CPU = Il2cppRelease|Any CPU
+		MonoDebug|Any CPU = MonoDebug|Any CPU
+		MonoRelease|Any CPU = MonoRelease|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.Il2cppDebug|Any CPU.ActiveCfg = Il2cppDebug|Any CPU
+		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.Il2cppDebug|Any CPU.Build.0 = Il2cppDebug|Any CPU
+		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.Il2cppRelease|Any CPU.ActiveCfg = Il2cppRelease|Any CPU
+		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.Il2cppRelease|Any CPU.Build.0 = Il2cppRelease|Any CPU
+		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.MonoDebug|Any CPU.ActiveCfg = MonoDebug|Any CPU
+		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.MonoDebug|Any CPU.Build.0 = MonoDebug|Any CPU
+		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.MonoRelease|Any CPU.ActiveCfg = MonoRelease|Any CPU
+		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.MonoRelease|Any CPU.Build.0 = MonoRelease|Any CPU
 		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4A7A9CF-6405-427E-A5FF-E11CC5A39AC6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

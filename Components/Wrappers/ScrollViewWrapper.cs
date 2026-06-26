@@ -85,26 +85,26 @@ namespace bGUI.Components
             _scrollRect = GameObject.AddComponent<ScrollRect>();
 
             // Create Viewport
-            var viewportObj = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(Mask));
+            var viewportObj = new GameObject("Viewport");
             viewportObj.transform.SetParent(RectTransform);
-            _viewport = viewportObj.GetComponent<RectTransform>();
+            _viewport = viewportObj.AddComponent<RectTransform>();
             _viewport.anchorMin = Vector2.zero;
             _viewport.anchorMax = Vector2.one;
             _viewport.sizeDelta = Vector2.zero;
             _viewport.anchoredPosition = Vector2.zero;
 
             // Configure Mask
-            var mask = viewportObj.GetComponent<Mask>();
+            var mask = viewportObj.AddComponent<Mask>();
             mask.showMaskGraphic = false;
             
             // Configure Viewport Image
-            var viewportImage = viewportObj.GetComponent<Image>();
+            var viewportImage = viewportObj.AddComponent<Image>();
             viewportImage.color = Color.white;
 
             // Create Content
-            var contentObj = new GameObject("Content", typeof(RectTransform));
+            var contentObj = new GameObject("Content");
             contentObj.transform.SetParent(_viewport);
-            _content = contentObj.GetComponent<RectTransform>();
+            _content = contentObj.AddComponent<RectTransform>();
             _content.anchorMin = new Vector2(0, 1);
             _content.anchorMax = new Vector2(1, 1);
             _content.pivot = new Vector2(0.5f, 1);

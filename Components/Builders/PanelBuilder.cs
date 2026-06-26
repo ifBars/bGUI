@@ -205,12 +205,7 @@ namespace bGUI.Components
             var panelWrapper = _panel as PanelWrapper;
             if (panelWrapper != null)
             {
-                // Ensure no other layout group exists
-                var existingLayouts = panelWrapper.GameObject.GetComponents<UnityEngine.UI.LayoutGroup>();
-                foreach (var layout in existingLayouts)
-                {
-                    Object.DestroyImmediate(layout); // Use DestroyImmediate if called during editor time or initial setup
-                }
+                Il2CppCompat.RemoveLayoutGroups(panelWrapper.GameObject);
                 var builder = new HorizontalLayoutBuilder(panelWrapper.GameObject);
                 config?.Invoke(builder);
                 builder.Build(); // Builds and attaches the component
@@ -227,12 +222,7 @@ namespace bGUI.Components
             var panelWrapper = _panel as PanelWrapper;
             if (panelWrapper != null)
             {
-                // Ensure no other layout group exists
-                var existingLayouts = panelWrapper.GameObject.GetComponents<UnityEngine.UI.LayoutGroup>();
-                foreach (var layout in existingLayouts)
-                {
-                    Object.DestroyImmediate(layout);
-                }
+                Il2CppCompat.RemoveLayoutGroups(panelWrapper.GameObject);
                 var builder = new VerticalLayoutBuilder(panelWrapper.GameObject);
                 config?.Invoke(builder);
                 builder.Build(); // Builds and attaches the component
@@ -249,12 +239,7 @@ namespace bGUI.Components
             var panelWrapper = _panel as PanelWrapper;
             if (panelWrapper != null)
             {
-                // Ensure no other layout group exists
-                var existingLayouts = panelWrapper.GameObject.GetComponents<UnityEngine.UI.LayoutGroup>();
-                foreach (var layout in existingLayouts)
-                {
-                    Object.DestroyImmediate(layout);
-                }
+                Il2CppCompat.RemoveLayoutGroups(panelWrapper.GameObject);
                 var builder = new GridLayoutBuilder(panelWrapper.GameObject);
                 config?.Invoke(builder);
                 builder.Build(); // Builds and attaches the component

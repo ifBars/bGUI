@@ -1,5 +1,6 @@
 using bGUI.Core.Abstractions;
 using bGUI.Core.Containers;
+using bGUI.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -76,12 +77,7 @@ namespace bGUI.Components
         /// <returns>The added layout group component</returns>
         public T AddLayoutGroup<T>() where T : LayoutGroup
         {
-            // Remove any existing layout groups
-            var existingLayoutGroups = _gameObject.GetComponents<LayoutGroup>();
-            foreach (var layoutGroupToDestroy in existingLayoutGroups)
-            {
-                Object.Destroy(layoutGroupToDestroy);
-            }
+            Il2CppCompat.RemoveLayoutGroups(_gameObject);
 
             // Add the new layout group
             var layoutGroup = _gameObject.AddComponent<T>();

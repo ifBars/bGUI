@@ -1,5 +1,6 @@
 using bGUI.Core.Abstractions;
 using bGUI.Core.Containers;
+using bGUI.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -62,7 +63,7 @@ namespace bGUI.Components
         /// </summary>
         private static void EnsureEventSystem()
         {
-            if (Object.FindObjectOfType<EventSystem>() != null)
+            if (Il2CppCompat.HasEventSystem())
             {
                 return;
             }
@@ -121,4 +122,4 @@ namespace bGUI.Components
             }
         }
     }
-} 
+}

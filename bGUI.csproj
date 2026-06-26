@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework Condition="'$(Configuration)' == 'Il2cppRelease' Or '$(Configuration)' == 'Il2cppDebug'">net6.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <Authors>ifBars</Authors>
     <Description>Fluent Unity UGUI wrapper for MelonLoader mods.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -11,6 +12,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\bGUI.xml</DocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <Configurations>Debug;Release;MonoRelease;MonoDebug;Il2cppRelease;Il2cppDebug</Configurations>
     
     <!-- Default local paths - can be overridden by CI -->
     <MelonLoaderPath Condition="'$(MelonLoaderPath)' == ''">D:\SteamLibrary\steamapps\common\Schedule I\MelonLoader\net35</MelonLoaderPath>
@@ -18,6 +20,20 @@
     <LocalModsPath Condition="'$(LocalModsPath)' == ''">D:\SteamLibrary\steamapps\common\Schedule I\mods</LocalModsPath>
     <LocalGameExePath Condition="'$(LocalGameExePath)' == ''">D:\SteamLibrary\steamapps\common\Schedule I\Schedule I.exe</LocalGameExePath>
     <AutomateLocalDeployment Condition="'$(AutomateLocalDeployment)' == ''">false</AutomateLocalDeployment>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'MonoRelease' Or '$(Configuration)' == 'MonoDebug'">
+    <DefineConstants>$(DefineConstants);MONO</DefineConstants>
+    <MelonLoaderPath>D:\SteamLibrary\steamapps\common\Schedule I_alternate\MelonLoader\net35</MelonLoaderPath>
+    <UnityAssembliesPath>D:\SteamLibrary\steamapps\common\Schedule I_alternate\Schedule I_Data\Managed</UnityAssembliesPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Il2cppRelease' Or '$(Configuration)' == 'Il2cppDebug'">
+    <DefineConstants>$(DefineConstants);IL2CPP</DefineConstants>
+    <MelonLoaderPath>D:\SteamLibrary\steamapps\common\Schedule I_public\MelonLoader\net6</MelonLoaderPath>
+    <UnityAssembliesPath>D:\SteamLibrary\steamapps\common\Schedule I_public\MelonLoader\Il2CppAssemblies</UnityAssembliesPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -256,6 +272,22 @@
   <ItemGroup>
     <Folder Include="Samples\" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Il2cppRelease' Or '$(Configuration)' == 'Il2cppDebug'">
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(MelonLoaderPath)\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(UnityAssembliesPath)\Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="ValidatePaths" BeforeTargets="ResolveReferences">
+    <Error Text="Missing MelonLoader at $(MelonLoaderPath). Check configuration $(Configuration)." Condition="!Exists('$(MelonLoaderPath)\MelonLoader.dll')" />
+    <Error Text="Missing Unity assemblies at $(UnityAssembliesPath). Check configuration $(Configuration)." Condition="!Exists('$(UnityAssembliesPath)\UnityEngine.CoreModule.dll')" />
+  </Target>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(AutomateLocalDeployment)' == 'true'">
 		<Exec Command="tasklist | findstr /I &quot;Schedule.*I.exe&quot; &gt;nul &amp;&amp; taskkill /F /IM &quot;Schedule I.exe&quot;&#xD;&#xA;COPY &quot;$(TargetPath)&quot; &quot;$(LocalModsPath)&quot;&#xD;&#xA;START &quot;&quot; &quot;$(LocalGameExePath)&quot;" />

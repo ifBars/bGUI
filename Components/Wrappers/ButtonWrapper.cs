@@ -3,6 +3,7 @@ using bGUI.Core.Components;
 using bGUI.Utilities;
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace bGUI.Components
@@ -15,6 +16,7 @@ namespace bGUI.Components
         private Button _button;
         private Text _text;
         private event Action? _onClick;
+        private readonly UnityAction _buttonClickAction;
 
         /// <summary>
         /// Gets the underlying Button component.
@@ -37,7 +39,7 @@ namespace bGUI.Components
                 if (_onClick != null && _onClick.GetInvocationList().Length == 1)
                 {
                     // Only register the event handler once
-                    _button.onClick.AddListener(OnButtonClick);
+                    _button.onClick.AddListener(_buttonClickAction);
                 }
             }
             remove
@@ -46,7 +48,7 @@ namespace bGUI.Components
                 if (_onClick == null || _onClick.GetInvocationList().Length == 0)
                 {
                     // Unregister the event handler when there are no subscribers
-                    _button.onClick.RemoveListener(OnButtonClick);
+                    _button.onClick.RemoveListener(_buttonClickAction);
                 }
             }
         }
@@ -78,6 +80,8 @@ namespace bGUI.Components
         public ButtonWrapper(Transform? parent, string name = "Button", string text = "Button")
             : base(parent, name)
         {
+            _buttonClickAction = Il2CppCompat.ToUnityAction(OnButtonClick);
+
             // Add required components
             var image = _gameObject.AddComponent<Image>();
             _button = _gameObject.AddComponent<Button>();
@@ -180,7 +184,7 @@ namespace bGUI.Components
         {
             if (_button != null)
             {
-                _button.onClick.RemoveListener(OnButtonClick);
+                _button.onClick.RemoveListener(_buttonClickAction);
             }
             base.Destroy();
         }

@@ -1,7 +1,9 @@
 using bGUI.Core.Abstractions;
 using bGUI.Core.Components;
+using bGUI.Utilities;
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace bGUI.Components
@@ -16,6 +18,7 @@ namespace bGUI.Components
         private Image _fillImage = null!;
         private Image _handleImage = null!;
         private event Action<float>? _onValueChanged;
+        private readonly UnityAction<float> _sliderValueChangedAction;
 
         /// <summary>
         /// Gets the underlying Slider component.
@@ -33,7 +36,7 @@ namespace bGUI.Components
                 if (_onValueChanged != null && _onValueChanged.GetInvocationList().Length == 1)
                 {
                     // Only register the event handler once
-                    _slider.onValueChanged.AddListener(OnSliderValueChanged);
+                    _slider.onValueChanged.AddListener(_sliderValueChangedAction);
                 }
             }
             remove
@@ -42,7 +45,7 @@ namespace bGUI.Components
                 if (_onValueChanged == null || _onValueChanged.GetInvocationList().Length == 0)
                 {
                     // Unregister the event handler when there are no subscribers
-                    _slider.onValueChanged.RemoveListener(OnSliderValueChanged);
+                    _slider.onValueChanged.RemoveListener(_sliderValueChangedAction);
                 }
             }
         }
@@ -112,6 +115,8 @@ namespace bGUI.Components
         public SliderWrapper(Transform? parent, string name = "Slider", float minValue = 0f, float maxValue = 1f, float value = 0f)
             : base(parent, name)
         {
+            _sliderValueChangedAction = Il2CppCompat.ToUnityAction<float>(OnSliderValueChanged);
+
             // Set default size for slider
             _rectTransform.sizeDelta = new Vector2(160f, 20f);
 
@@ -393,7 +398,7 @@ namespace bGUI.Components
         {
             if (_slider != null)
             {
-                _slider.onValueChanged.RemoveListener(OnSliderValueChanged);
+                _slider.onValueChanged.RemoveListener(_sliderValueChangedAction);
             }
             base.Destroy();
         }

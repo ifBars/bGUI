@@ -1,3 +1,4 @@
+using bGUI.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -48,12 +49,7 @@ namespace bGUI.Core.Abstractions
         {
             _gameObject = gameObject;
             
-            // Remove any existing layout groups to prevent conflicts
-            var existingLayouts = gameObject.GetComponents<LayoutGroup>();
-            foreach (var layout in existingLayouts)
-            {
-                Object.DestroyImmediate(layout);
-            }
+            Il2CppCompat.RemoveLayoutGroups(gameObject);
             
             // Add the new layout group
             _layoutGroup = gameObject.AddComponent<TLayoutGroup>();
@@ -117,4 +113,4 @@ namespace bGUI.Core.Abstractions
             return this;
         }
     }
-} 
+}

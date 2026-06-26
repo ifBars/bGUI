@@ -1,3 +1,4 @@
+using bGUI.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
@@ -130,12 +131,7 @@ namespace bGUI.Core.Abstractions
         /// <returns>The layout group component</returns>
         public virtual T SetLayoutGroup<T>() where T : LayoutGroup
         {
-            // Remove existing layout groups
-            var existingLayouts = _gameObject.GetComponents<LayoutGroup>();
-            foreach (var layout in existingLayouts)
-            {
-                Object.DestroyImmediate(layout);
-            }
+            Il2CppCompat.RemoveLayoutGroups(_gameObject);
 
             // Add new layout group
             return _gameObject.AddComponent<T>();

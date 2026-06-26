@@ -50,14 +50,14 @@ MelonLoader loads `UserLibs` dependencies alongside mods, so shipping bGUI this 
 # Restore dependencies
 dotnet restore
 
-# Debug build
-dotnet build bGUI.sln -c Debug
+# Mono build for the alternate branch
+dotnet build bGUI.sln -c MonoRelease
 
-# Release build
-dotnet build bGUI.sln -c Release
+# IL2CPP build for the public branch
+dotnet build bGUI.sln -c Il2cppRelease
 ```
 
-> **Note:** The `.csproj` references Unity and MelonLoader DLLs from local paths. Update the `<HintPath>` entries in `bGUI.csproj` to match your game installation directory.
+> **Note:** The `.csproj` references Unity and MelonLoader DLLs from local paths. Override `MelonLoaderPath` and `UnityAssembliesPath` when your Schedule I installs are in different locations.
 
 ## Quick Start
 

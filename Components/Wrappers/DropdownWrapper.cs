@@ -1,8 +1,10 @@
 using bGUI.Core.Abstractions;
 using bGUI.Core.Components;
+using bGUI.Utilities;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace bGUI.Components
@@ -25,23 +27,7 @@ namespace bGUI.Components
         private float _itemHeight = 32f; // Increased from 24f for better readability
         private float _itemSpacing = 4f; // Increased from 2f for better visual separation
         private event Action<int>? _onValueChanged;
-        
-        // Helper to keep scroll position consistent when template toggles
-        private class DropdownTemplateActivator : MonoBehaviour
-        {
-            private ScrollRect _scrollRect;
-            public void Initialize(ScrollRect scrollRect)
-            {
-                _scrollRect = scrollRect;
-            }
-            private void OnEnable()
-            {
-                if (_scrollRect != null)
-                {
-                    _scrollRect.verticalNormalizedPosition = 1f;
-                }
-            }
-        }
+        private readonly UnityAction<int> _dropdownValueChangedAction;
 
         /// <summary>
         /// Gets the underlying Dropdown component.
@@ -58,7 +44,7 @@ namespace bGUI.Components
                 _onValueChanged += value;
                 if (_onValueChanged != null && _onValueChanged.GetInvocationList().Length == 1)
                 {
-                    _dropdown.onValueChanged.AddListener(OnDropdownValueChanged);
+                    _dropdown.onValueChanged.AddListener(_dropdownValueChangedAction);
                 }
             }
             remove
@@ -66,7 +52,7 @@ namespace bGUI.Components
                 _onValueChanged -= value;
                 if (_onValueChanged == null || _onValueChanged.GetInvocationList().Length == 0)
                 {
-                    _dropdown.onValueChanged.RemoveListener(OnDropdownValueChanged);
+                    _dropdown.onValueChanged.RemoveListener(_dropdownValueChangedAction);
                 }
             }
         }
@@ -106,6 +92,7 @@ namespace bGUI.Components
         public DropdownWrapper(Transform? parent, string name = "Dropdown")
             : base(parent, name)
         {
+            _dropdownValueChangedAction = Il2CppCompat.ToUnityAction<int>(OnDropdownValueChanged);
             _rectTransform.sizeDelta = new Vector2(160f, 30f);
 
             _backgroundImage = _gameObject.AddComponent<Image>();
@@ -257,8 +244,6 @@ namespace bGUI.Components
             _dropdown.targetGraphic = _backgroundImage;
             // Ensure the list opens scrolled to the top by default
             scrollRect.verticalNormalizedPosition = 1f;
-            // Keep content at top when template is enabled
-            templateGO.AddComponent<DropdownTemplateActivator>().Initialize(scrollRect);
         }
 
         private void SetupDefaults()
@@ -319,14 +304,16 @@ namespace bGUI.Components
         public void SetOptions(IEnumerable<string> options)
         {
             _dropdown.ClearOptions();
-            var list = new List<Dropdown.OptionData>();
+            int count = 0;
             foreach (var o in options)
-                list.Add(new Dropdown.OptionData(o));
-            _dropdown.AddOptions(list);
+            {
+                _dropdown.options.Add(new Dropdown.OptionData(o));
+                count++;
+            }
             _dropdown.RefreshShownValue();
             
             // Debug logging
-            Debug.Log($"[DropdownWrapper] SetOptions: Added {list.Count} options. Total options: {_dropdown.options.Count}");
+            Debug.Log($"[DropdownWrapper] SetOptions: Added {count} options. Total options: {_dropdown.options.Count}");
         }
 
         public void SetColors(Color normalColor, Color highlightedColor, Color pressedColor, Color disabledColor)
@@ -542,10 +529,9 @@ namespace bGUI.Components
         {
             if (_dropdown != null)
             {
-                _dropdown.onValueChanged.RemoveListener(OnDropdownValueChanged);
+                _dropdown.onValueChanged.RemoveListener(_dropdownValueChangedAction);
             }
             base.Destroy();
         }
     }
 }
-

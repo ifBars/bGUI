@@ -1,6 +1,7 @@
 using UnityEngine;
 using bGUI.Core.Abstractions;
 using bGUI.Core.Enums;
+using MelonLoader;
 using System.Collections;
 
 namespace bGUI.Core.Extensions
@@ -112,9 +113,14 @@ namespace bGUI.Core.Extensions
             canvasGroup.alpha = 0f;
             element.GameObject.SetActive(true);
             
+            // IL2CPP cannot safely add arbitrary managed MonoBehaviour types.
+#if IL2CPP
+            MelonCoroutines.Start(FadeCoroutine(canvasGroup, 0f, 1f, duration, onComplete));
+#else
             // Simple coroutine-like fade using MonoBehaviour if available
             var fadeBehaviour = element.GameObject.GetComponent<MonoBehaviour>() ?? element.GameObject.AddComponent<SimpleMonoBehaviour>();
             fadeBehaviour.StartCoroutine(FadeCoroutine(canvasGroup, 0f, 1f, duration, onComplete));
+#endif
             
             return element;
         }
@@ -131,13 +137,19 @@ namespace bGUI.Core.Extensions
         {
             var canvasGroup = GetOrAddCanvasGroup(element.GameObject);
             
-            var fadeBehaviour = element.GameObject.GetComponent<MonoBehaviour>() ?? element.GameObject.AddComponent<SimpleMonoBehaviour>();
-            fadeBehaviour.StartCoroutine(FadeCoroutine(canvasGroup, canvasGroup.alpha, 0f, duration, () =>
+            System.Action completion = () =>
             {
                 if (hideOnComplete)
                     element.GameObject.SetActive(false);
                 onComplete?.Invoke();
-            }));
+            };
+
+#if IL2CPP
+            MelonCoroutines.Start(FadeCoroutine(canvasGroup, canvasGroup.alpha, 0f, duration, completion));
+#else
+            var fadeBehaviour = element.GameObject.GetComponent<MonoBehaviour>() ?? element.GameObject.AddComponent<SimpleMonoBehaviour>();
+            fadeBehaviour.StartCoroutine(FadeCoroutine(canvasGroup, canvasGroup.alpha, 0f, duration, completion));
+#endif
             
             return element;
         }
@@ -194,7 +206,7 @@ namespace bGUI.Core.Extensions
         /// <summary>
         /// Coroutine for fading UI elements.
         /// </summary>
-        private static IEnumerator FadeCoroutine(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration, System.Action onComplete)
+        private static IEnumerator FadeCoroutine(CanvasGroup canvasGroup, float startAlpha, float endAlpha, float duration, System.Action? onComplete)
         {
             float elapsedTime = 0f;
             

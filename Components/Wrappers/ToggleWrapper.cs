@@ -1,7 +1,9 @@
 using bGUI.Core.Abstractions;
 using bGUI.Core.Components;
+using bGUI.Utilities;
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace bGUI.Components
@@ -16,6 +18,7 @@ namespace bGUI.Components
         private Image _checkmarkImage = null!;
         private Text _label = null!;
         private event Action<bool>? _onValueChanged;
+        private readonly UnityAction<bool> _toggleValueChangedAction;
 
         /// <summary>
         /// Gets the underlying Toggle component.
@@ -32,7 +35,7 @@ namespace bGUI.Components
                 _onValueChanged += value;
                 if (_onValueChanged != null && _onValueChanged.GetInvocationList().Length == 1)
                 {
-                    _toggle.onValueChanged.AddListener(OnToggleValueChanged);
+                    _toggle.onValueChanged.AddListener(_toggleValueChangedAction);
                 }
             }
             remove
@@ -40,7 +43,7 @@ namespace bGUI.Components
                 _onValueChanged -= value;
                 if (_onValueChanged == null || _onValueChanged.GetInvocationList().Length == 0)
                 {
-                    _toggle.onValueChanged.RemoveListener(OnToggleValueChanged);
+                    _toggle.onValueChanged.RemoveListener(_toggleValueChangedAction);
                 }
             }
         }
@@ -82,6 +85,8 @@ namespace bGUI.Components
         public ToggleWrapper(Transform? parent, string name = "Toggle", string label = "Toggle", bool isOn = false)
             : base(parent, name)
         {
+            _toggleValueChangedAction = Il2CppCompat.ToUnityAction<bool>(OnToggleValueChanged);
+
             // Set a readable default size
             _rectTransform.sizeDelta = new Vector2(220f, 28f);
 
@@ -211,10 +216,9 @@ namespace bGUI.Components
         {
             if (_toggle != null)
             {
-                _toggle.onValueChanged.RemoveListener(OnToggleValueChanged);
+                _toggle.onValueChanged.RemoveListener(_toggleValueChangedAction);
             }
             base.Destroy();
         }
     }
 }
-
